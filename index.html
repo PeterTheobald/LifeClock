@@ -1,0 +1,851 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Life Clock</title>
+<style>
+:root{
+  color-scheme: light dark;
+  --bg:#efeae0;
+  --bg2:#fbf8f2;
+  --ink:#241f1a;
+  --panel:rgba(255,255,255,.66);
+  --panel-edge:rgba(36,31,26,.16);
+  --life:#6a45cf;
+  --year:#2a63cf;
+  --month:#0f7fb5;
+  --week:#0a8a86;
+  --day:#4a9437;
+  --hour:#cf9212;
+  --minute:#d75a22;
+  --hi:#ffffff;
+  --lo:#000000;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#08090c;
+    --bg2:#15181f;
+    --ink:#e9e6df;
+    --panel:rgba(22,25,32,.62);
+    --panel-edge:rgba(233,230,223,.16);
+    --life:#9d7bff;
+    --year:#5b94ff;
+    --month:#45bce6;
+    --week:#2ad3c6;
+    --day:#6fd45c;
+    --hour:#ffc44d;
+    --minute:#ff8a4c;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#08090c;
+  --bg2:#15181f;
+  --ink:#e9e6df;
+  --panel:rgba(22,25,32,.62);
+  --panel-edge:rgba(233,230,223,.16);
+  --life:#9d7bff;
+  --year:#5b94ff;
+  --month:#45bce6;
+  --week:#2ad3c6;
+  --day:#6fd45c;
+  --hour:#ffc44d;
+  --minute:#ff8a4c;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+#dial{position:fixed;inset:0;display:block}
+
+/* ---- centre hub ---- */
+#hub{
+  position:fixed;
+  transform:translate(-50%,-50%);
+  width:160px;height:160px;
+  border-radius:50%;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:.35em;
+  overflow:hidden;
+  text-align:center;
+  font-size:13px;
+  line-height:1.1;
+}
+#hub .pct{display:flex;flex-direction:column;gap:.1em;pointer-events:none}
+#hub .pct b{font-size:1.45em;font-weight:650;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+#hub .pct span{font-size:.56em;letter-spacing:.16em;opacity:.5;text-transform:uppercase}
+#hub .fields{display:flex;flex-direction:column;gap:.3em}
+#hub .fields label{display:flex;align-items:center;justify-content:center;gap:.4em}
+#hub .fields label i{
+  font-style:normal;font-size:.56em;letter-spacing:.12em;opacity:.5;
+  width:3.6em;text-align:right;text-transform:uppercase;
+}
+#hub input{
+  width:3.5em;padding:.1em .15em;
+  font:inherit;font-weight:650;font-variant-numeric:tabular-nums;
+  color:inherit;background:transparent;text-align:center;
+  border:0;border-bottom:1px solid var(--panel-edge);border-radius:2px;
+  outline:none;
+}
+#hub input:focus{border-bottom-color:currentColor;background:color-mix(in srgb,var(--ink) 7%,transparent)}
+#hub input.bad{border-bottom-color:#e0463c;background:rgba(224,70,60,.16)}
+#hub input::-webkit-outer-spin-button,#hub input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+#hub input[type=number]{-moz-appearance:textfield;appearance:textfield}
+
+/* ---- key ---- */
+#key{
+  position:fixed;top:18px;right:18px;z-index:3;
+  min-width:206px;
+  padding:11px 12px 9px;
+  border:1px solid var(--panel-edge);
+  border-radius:12px;
+  background:var(--panel);
+  backdrop-filter:blur(14px) saturate(1.3);
+  -webkit-backdrop-filter:blur(14px) saturate(1.3);
+  box-shadow:0 10px 30px rgba(0,0,0,.14);
+  font-size:12px;
+}
+.k-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.k-title{font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;opacity:.55;font-weight:650}
+#theme{
+  font:inherit;font-size:9.5px;letter-spacing:.14em;font-weight:650;
+  color:inherit;background:transparent;text-transform:uppercase;
+  border:1px solid var(--panel-edge);border-radius:999px;
+  padding:3px 9px;cursor:pointer;opacity:.75;
+}
+#theme:hover{opacity:1}
+.row{
+  display:grid;grid-template-columns:14px 10px 1fr auto;
+  align-items:center;gap:8px;
+  padding:3.5px 2px;border-radius:6px;cursor:pointer;
+}
+.row:hover{background:color-mix(in srgb,var(--ink) 7%,transparent)}
+.row input{margin:0;width:13px;height:13px;accent-color:var(--c);cursor:pointer}
+.chip{width:10px;height:10px;border-radius:3px;background:var(--c);box-shadow:0 0 0 1px color-mix(in srgb,var(--c) 45%,transparent),0 0 9px -1px var(--c)}
+.nm{font-weight:600;letter-spacing:.01em}
+.val{font-size:11px;opacity:.6;font-variant-numeric:tabular-nums;white-space:nowrap}
+.row.off .chip{background:transparent;box-shadow:0 0 0 1px var(--panel-edge)}
+.row.off .nm,.row.off .val{opacity:.34}
+@media (max-width:620px){
+  #key{left:10px;right:10px;top:10px;min-width:0;padding:9px 10px 7px}
+  #rows{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+  .val{font-size:10px}
+}
+</style>
+</head>
+<body>
+<canvas id="dial"></canvas>
+
+<div id="hub">
+  <div class="pct"><b id="pct">—</b><span>of life</span></div>
+  <div class="fields">
+    <label><i>start</i><input id="sy" type="number" min="1900" max="2100" step="1" inputmode="numeric" aria-label="Start year"></label>
+    <label><i>span</i><input id="ls" type="number" min="1" max="150" step="1" inputmode="numeric" aria-label="Estimated lifespan in years"></label>
+  </div>
+</div>
+
+<aside id="key" aria-label="Ring key">
+  <div class="k-head">
+    <span class="k-title">Life Clock</span>
+    <button id="theme" type="button" title="Light / dark theme">auto</button>
+  </div>
+  <div id="rows"></div>
+</aside>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------------------------------------------------------------- basics */
+var TAU = Math.PI * 2, DAY = 864e5, HOUR = 36e5;
+var FONT = 'ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif';
+var MON = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+var WD  = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
+var WDF = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+function pad2(n){ return (n<10?'0':'')+n; }
+function sod(t){ var d=new Date(t); return new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime(); }
+function addDays(t,n){ var d=new Date(t); return new Date(d.getFullYear(),d.getMonth(),d.getDate()+n).getTime(); }
+function jan1(y){ return new Date(y,0,1).getTime(); }
+
+/* -------------------------------------------------------- time + testing */
+var qp = new URLSearchParams(location.search);
+var rate = parseFloat(qp.get('rate'));
+if (!isFinite(rate) || rate <= 0) rate = 1;
+var tStart = qp.get('t') ? new Date(qp.get('t')).getTime() : NaN;
+if (!isFinite(tStart)) tStart = Date.now();
+var wall0 = Date.now(), base0 = tStart;
+function nowMs(){
+  if (rate === 1 && base0 === wall0) return Date.now();
+  return base0 + (Date.now() - wall0) * rate;
+}
+
+/* ------------------------------------------------------------ ring model */
+var RINGS = [
+{ id:'life', name:'Life', hand:'spear', labelMode:'tick',
+  prog:function(t,s){
+    var a=jan1(s.startYear), b=jan1(s.startYear+s.lifespan), f=(t-a)/(b-a);
+    var yr=(t-a)/(365.2425*DAY);
+    return { frac:clamp(f,0,1), raw:f, done:f>=1,
+      text: f<0 ? 'begins '+s.startYear
+           : (f>=1 ? 'complete · 100%'
+                   : yr.toFixed(1)+' yr · '+(f*100).toFixed(1)+'%') };
+  },
+  ticks:function(t,s){
+    var a=jan1(s.startYear), b=jan1(s.startYear+s.lifespan), out=[], i, y;
+    var step = s.lifespan > 120 ? 2 : 1;
+    for(i=0;i<s.lifespan;i+=step){
+      y = s.startYear+i;
+      out.push({ f:(jan1(y)-a)/(b-a), major:i%5===0,
+        label:(i%10===0?String(y):null), lp:(i%20===0?0:1) });
+    }
+    return out;
+  } },
+
+{ id:'year', name:'Year', hand:'lance', labelMode:'sector',
+  prog:function(t){
+    var d=new Date(t), y=d.getFullYear(), a=jan1(y), b=jan1(y+1);
+    var doy=Math.round((sod(t)-a)/DAY)+1, tot=Math.round((b-a)/DAY);
+    return { frac:(t-a)/(b-a), text:'day '+doy+' of '+tot };
+  },
+  ticks:function(t){
+    var y=new Date(t).getFullYear(), a=jan1(y), b=jan1(y+1), span=b-a, out=[], m, f, f2;
+    for(m=0;m<12;m++){
+      f  = (new Date(y,m,1).getTime()-a)/span;
+      f2 = (new Date(y,m+1,1).getTime()-a)/span;
+      out.push({ f:f, mid:(f+f2)/2, major:true, label:MON[m], lp:(m%3===0?0:1) });
+    }
+    return out;
+  } },
+
+{ id:'month', name:'Month', hand:'bodkin', labelMode:'sector',
+  prog:function(t){
+    var d=new Date(t), y=d.getFullYear(), mo=d.getMonth();
+    var a=new Date(y,mo,1).getTime(), b=new Date(y,mo+1,1).getTime();
+    return { frac:(t-a)/(b-a), text:'day '+d.getDate()+' of '+Math.round((b-a)/DAY) };
+  },
+  ticks:function(t){
+    var d=new Date(t), y=d.getFullYear(), mo=d.getMonth();
+    var a=new Date(y,mo,1).getTime(), span=new Date(y,mo+1,1).getTime()-a;
+    var tot=Math.round(span/DAY), out=[], i, f, f2, key;
+    for(i=0;i<tot;i++){
+      f  = (new Date(y,mo,1+i).getTime()-a)/span;
+      f2 = (new Date(y,mo,2+i).getTime()-a)/span;
+      key = (i===0 || (i+1)%5===0);
+      out.push({ f:f, mid:(f+f2)/2, major:key, label:String(i+1), lp:(key?0:1) });
+    }
+    return out;
+  } },
+
+{ id:'week', name:'Week', hand:'leaf', labelMode:'sector',
+  prog:function(t){
+    var d=new Date(t), dow=(d.getDay()+6)%7;
+    var m=addDays(sod(t),-dow), m2=addDays(sod(t),7-dow);
+    return { frac:(t-m)/(m2-m), text:WDF[dow]+' '+pad2(d.getHours())+':'+pad2(d.getMinutes()) };
+  },
+  ticks:function(t){
+    var d=new Date(t), dow=(d.getDay()+6)%7;
+    var m=addDays(sod(t),-dow), span=addDays(sod(t),7-dow)-m, out=[], i, f, f2;
+    for(i=0;i<7;i++){
+      f  = (addDays(m,i)-m)/span;
+      f2 = (addDays(m,i+1)-m)/span;
+      out.push({ f:f, mid:(f+f2)/2, major:true, label:WD[i], lp:0 });
+    }
+    return out;
+  } },
+
+{ id:'day', name:'Day', hand:'broadhead', labelMode:'tick',
+  prog:function(t){
+    var a=sod(t), b=addDays(a,1), d=new Date(t);
+    return { frac:(t-a)/(b-a), text:pad2(d.getHours())+':'+pad2(d.getMinutes()) };
+  },
+  ticks:function(t){
+    var a=sod(t), span=addDays(a,1)-a, out=[], i;
+    for(i=0;i<24;i++) out.push({ f:(i*HOUR)/span, major:i%6===0,
+      label:String(i===0?24:i), lp:(i%6===0?0:1) });
+    return out;
+  } },
+
+{ id:'hour', name:'Hour', hand:'dart', labelMode:'tick',
+  prog:function(t){
+    var d=new Date(t);
+    return { frac:(d.getMinutes()*60+d.getSeconds()+d.getMilliseconds()/1000)/3600,
+             text:pad2(d.getMinutes())+' min' };
+  },
+  ticks:function(){
+    var out=[], i;
+    for(i=0;i<60;i++) out.push({ f:i/60, major:i%5===0,
+      label:(i%5===0?String(i):null), lp:(i%15===0?0:1) });
+    return out;
+  } },
+
+{ id:'minute', name:'Minute', hand:'whisker', labelMode:'tick',
+  prog:function(t){
+    var d=new Date(t);
+    return { frac:(d.getSeconds()+d.getMilliseconds()/1000)/60, text:pad2(d.getSeconds())+' sec' };
+  },
+  ticks:function(){
+    var out=[], i;
+    for(i=0;i<60;i++) out.push({ f:i/60, major:i%5===0,
+      label:(i%5===0?String(i):null), lp:(i%15===0?0:1) });
+    return out;
+  } }
+];
+
+/* ---------------------------------------------------------------- state */
+var KEY = 'lifeclock.v1';
+var state = { startYear:1990, lifespan:85, theme:'auto', vis:{} };
+RINGS.forEach(function(r){ state.vis[r.id] = true; });
+
+function load(){
+  var raw, o, i;
+  try { raw = localStorage.getItem(KEY); } catch(e){ return; }
+  if (!raw) return;
+  try { o = JSON.parse(raw); } catch(e){ return; }
+  if (!o || typeof o !== 'object') return;
+  if (isFinite(o.startYear) && o.startYear>=1900 && o.startYear<=2100) state.startYear = o.startYear|0;
+  if (isFinite(o.lifespan)  && o.lifespan >=1    && o.lifespan <=150)  state.lifespan  = o.lifespan|0;
+  if (o.theme==='light'||o.theme==='dark'||o.theme==='auto') state.theme = o.theme;
+  if (o.vis) for (i=0;i<RINGS.length;i++){
+    if (typeof o.vis[RINGS[i].id] === 'boolean') state.vis[RINGS[i].id] = o.vis[RINGS[i].id];
+  }
+}
+function save(){
+  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){}
+}
+load();
+
+/* -------------------------------------------------------------- palette */
+function hex2rgb(s){
+  s = String(s).trim();
+  var m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(s);
+  if (m){
+    var h = m[1];
+    if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+    return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+  }
+  m = /rgba?\(([^)]+)\)/i.exec(s);
+  if (m){
+    var p = m[1].split(/[,\s/]+/).filter(Boolean).map(parseFloat);
+    return [p[0]|0, p[1]|0, p[2]|0];
+  }
+  return [128,128,128];
+}
+function rgba(c,a){ return 'rgba('+c[0]+','+c[1]+','+c[2]+','+a+')'; }
+function mix(a,b,t){
+  return [Math.round(a[0]+(b[0]-a[0])*t), Math.round(a[1]+(b[1]-a[1])*t), Math.round(a[2]+(b[2]-a[2])*t)];
+}
+var WHITE=[255,255,255], BLACK=[0,0,0];
+var P = null;
+
+function readPalette(){
+  var cs = getComputedStyle(document.documentElement);
+  var g = function(n){ return hex2rgb(cs.getPropertyValue(n)); };
+  var bg = g('--bg'), bg2 = g('--bg2'), ink = g('--ink');
+  var dark = (bg[0]+bg[1]+bg[2])/3 < 128;
+  P = {
+    dark:dark, bg:bg, bg2:bg2, ink:ink,
+    shadow: dark ? 'rgba(0,0,0,.75)' : 'rgba(40,32,24,.32)',
+    tickMaj: rgba(ink, dark?0.62:0.52),
+    tickMin: rgba(ink, dark?0.30:0.26),
+    label:   rgba(ink, dark?0.66:0.58),
+    edgeHi:  rgba(WHITE, dark?0.08:0.55),
+    edgeLo:  rgba(BLACK, dark?0.34:0.14),
+    hubFace: rgba(mix(bg2, dark?WHITE:BLACK, 0.03), 1),
+    datum:   rgba(ink, dark?0.26:0.22),
+    ring:{}, hand:{}, wash:{}
+  };
+  RINGS.forEach(function(r){
+    var c = g('--'+r.id);
+    P.ring[r.id] = c;
+    P.hand[r.id] = mix(c, dark?WHITE:mix(BLACK,ink,0.35), dark?0.34:0.42);
+    P.wash[r.id] = mix(c, bg, dark?0.62:0.58);
+  });
+}
+
+function applyTheme(){
+  if (state.theme === 'auto') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', state.theme);
+  readPalette();
+}
+
+/* --------------------------------------------------------------- canvas */
+var cvs = document.getElementById('dial');
+var ctx = cvs.getContext('2d');
+var hub = document.getElementById('hub');
+var keyEl = document.getElementById('key');
+var W=0,H=0,dpr=1,cx=0,cy=0,R=0,R0=0,GAP=0;
+
+function measure(){
+  var w = window.innerWidth, h = window.innerHeight;
+  dpr = Math.min(3, window.devicePixelRatio || 1);
+  cvs.width  = Math.max(1, Math.round(w*dpr));
+  cvs.height = Math.max(1, Math.round(h*dpr));
+  cvs.style.width = w+'px';
+  cvs.style.height = h+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  W = w; H = h;
+
+  var top = 0;
+  if (w <= 620) top = keyEl.getBoundingClientRect().bottom + 8;
+  cx = w/2;
+  cy = top + (h-top)/2;
+  R  = Math.max(70, Math.min(w, h-top) * 0.46);
+  R0 = Math.max(R*0.21, 40);
+  GAP = Math.max(2, R*0.026);
+
+  var hs = Math.round(R0*1.92);
+  hub.style.width = hs+'px';
+  hub.style.height = hs+'px';
+  hub.style.left = Math.round(cx)+'px';
+  hub.style.top  = Math.round(cy)+'px';
+  hub.style.fontSize = clamp(R0*0.235, 9, 14).toFixed(1)+'px';
+  layout();
+}
+
+function layout(){
+  var vis = RINGS.filter(function(r){ return state.vis[r.id]; });
+  var n = vis.length;
+  if (n){
+    var bw = Math.max(6, (R - R0 - GAP*n) / n);
+    var r = R0 + GAP, i;
+    for (i=0;i<n;i++){ vis[i].tIn = r; vis[i].tOut = r + bw; r += bw + GAP; }
+  }
+  RINGS.forEach(function(rg){
+    rg.tA = state.vis[rg.id] ? 1 : 0;
+    if (rg.rIn == null){ rg.rIn = rg.tIn != null ? rg.tIn : R0; rg.rOut = rg.tOut != null ? rg.tOut : R0; rg.a = rg.tA; }
+  });
+}
+
+function ease(){
+  RINGS.forEach(function(rg){
+    if (state.vis[rg.id] && rg.tIn != null){
+      rg.rIn  += (rg.tIn  - rg.rIn ) * 0.18;
+      rg.rOut += (rg.tOut - rg.rOut) * 0.18;
+    }
+    rg.a += (rg.tA - rg.a) * 0.18;
+    if (Math.abs(rg.tA - rg.a) < 0.004) rg.a = rg.tA;
+  });
+}
+
+/* ------------------------------------------------------------- drawing */
+function angOf(f){ return -Math.PI/2 + f*TAU; }
+
+function drawBack(){
+  var g = ctx.createRadialGradient(cx,cy,0,cx,cy,Math.max(W,H)*0.78);
+  g.addColorStop(0, rgba(P.bg2,1));
+  g.addColorStop(1, rgba(P.bg,1));
+  ctx.fillStyle = g;
+  ctx.fillRect(0,0,W,H);
+}
+
+function drawDatum(){
+  var outer = R0, i;
+  for (i=0;i<RINGS.length;i++) if (RINGS[i].a > 0.02 && RINGS[i].rOut > outer) outer = RINGS[i].rOut;
+  ctx.save();
+  ctx.strokeStyle = P.datum;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - R0 + 1);
+  ctx.lineTo(cx, cy - outer - GAP*0.6);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawTrackFill(rg){
+  if (rg.a < 0.01) return;
+  var c = P.ring[rg.id], bw = rg.rOut - rg.rIn, rm = (rg.rIn + rg.rOut)/2;
+  var frac = clamp(rg._p.frac, 0, 1), a0 = angOf(0);
+  ctx.save();
+  ctx.globalAlpha = rg.a;
+
+  ctx.lineWidth = bw;
+  ctx.lineCap = 'butt';
+  ctx.strokeStyle = rgba(c, P.dark ? 0.13 : 0.12);
+  ctx.beginPath(); ctx.arc(cx,cy,rm,0,TAU); ctx.stroke();
+
+  if (frac > 0.0004){
+    var g;
+    if (ctx.createConicGradient){
+      g = ctx.createConicGradient(a0, cx, cy);
+      g.addColorStop(0, rgba(P.wash[rg.id], 1));
+      g.addColorStop(Math.max(0.004, frac*0.55), rgba(mix(P.wash[rg.id], c, 0.6), 1));
+      g.addColorStop(Math.max(0.006, Math.min(frac, 0.9995)), rgba(c, 1));
+      g.addColorStop(1, rgba(c, 1));
+      ctx.strokeStyle = g;
+    } else {
+      ctx.strokeStyle = rgba(c, 0.88);
+    }
+    ctx.beginPath(); ctx.arc(cx,cy,rm,a0,a0+frac*TAU); ctx.stroke();
+
+    var a1 = angOf(frac);
+    ctx.save();
+    ctx.shadowColor = rgba(c, 0.95);
+    ctx.shadowBlur = Math.max(4, bw*0.75);
+    ctx.strokeStyle = rgba(mix(c, WHITE, 0.3), 1);
+    ctx.lineWidth = bw;
+    ctx.beginPath(); ctx.arc(cx,cy,rm, Math.max(a0, a1-Math.max(0.012, 7/rm)), a1); ctx.stroke();
+    ctx.restore();
+  }
+
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = P.edgeHi;
+  ctx.beginPath(); ctx.arc(cx,cy,rg.rOut-0.5,0,TAU); ctx.stroke();
+  ctx.strokeStyle = P.edgeLo;
+  ctx.beginPath(); ctx.arc(cx,cy,rg.rIn+0.5,0,TAU); ctx.stroke();
+
+  if (rg._p.done){
+    var d = Math.min(bw*0.22, 7);
+    ctx.fillStyle = rgba(mix(c, WHITE, 0.45), 1);
+    ctx.beginPath();
+    ctx.moveTo(cx, cy-rm-d); ctx.lineTo(cx+d, cy-rm); ctx.lineTo(cx, cy-rm+d); ctx.lineTo(cx-d, cy-rm);
+    ctx.closePath(); ctx.fill();
+  }
+  ctx.restore();
+}
+
+function arcText(s, r, ang){
+  var rot = ang + Math.PI/2;
+  var n = ((rot % TAU) + TAU) % TAU;
+  if (n > Math.PI/2 && n < 3*Math.PI/2) rot += Math.PI;
+  ctx.save();
+  ctx.translate(cx + Math.cos(ang)*r, cy + Math.sin(ang)*r);
+  ctx.rotate(rot);
+  ctx.fillText(s, 0, 0);
+  ctx.restore();
+}
+
+/* Every label if they fit; else only the primaries (lp 0); else none.
+   ctx.font must already be set. */
+function fitLabels(ticks, lr, fs){
+  if (lr <= 0) return [];
+  var full = ticks.filter(function(x){ return x.label; });
+  if (!full.length) return [];
+  var tries = [full, full.filter(function(x){ return x.lp === 0; })];
+  var k, i, widest, room, set;
+  for (k=0;k<tries.length;k++){
+    set = tries[k];
+    if (!set.length) continue;
+    widest = 0;
+    for (i=0;i<set.length;i++) widest = Math.max(widest, ctx.measureText(set[i].label).width);
+    room = (TAU*lr) / set.length;
+    if (widest + fs*0.5 < room) return set;
+  }
+  return [];
+}
+
+function drawTicks(rg, t){
+  if (rg.a < 0.01) return;
+  var bw = rg.rOut - rg.rIn, rm = (rg.rIn + rg.rOut)/2, circ = TAU*rm;
+  var ticks = rg.ticks(t, state), i, tk, ang, len, r1, r0;
+  var showMinor = circ / ticks.length > 5.5;
+
+  ctx.save();
+  ctx.globalAlpha = rg.a;
+  ctx.lineCap = 'butt';
+  r1 = rg.rOut - Math.max(1, bw*0.05);
+  for (i=0;i<ticks.length;i++){
+    tk = ticks[i];
+    if (!tk.major && !showMinor) continue;
+    ang = angOf(tk.f);
+    len = bw * (tk.major ? 0.30 : 0.15);
+    r0 = r1 - len;
+    ctx.lineWidth = tk.major ? Math.max(1, bw*0.05) : 1;
+    ctx.strokeStyle = tk.major ? P.tickMaj : P.tickMin;
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(ang)*r0, cy + Math.sin(ang)*r0);
+    ctx.lineTo(cx + Math.cos(ang)*r1, cy + Math.sin(ang)*r1);
+    ctx.stroke();
+  }
+
+  var fs = clamp(bw*0.30, 7, 14);
+  if (bw > 15){
+    ctx.font = '650 ' + fs.toFixed(1) + 'px ' + FONT;
+    try { ctx.letterSpacing = Math.max(0, fs*0.06).toFixed(1)+'px'; } catch(e){}
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = P.label;
+
+    var lr = r1 - bw*0.30 - fs*0.68;
+    var labs = fitLabels(ticks, lr, fs), j;
+    if (lr > rg.rIn + fs*0.4){
+      for (j=0;j<labs.length;j++){
+        arcText(labs[j].label, lr, angOf(rg.labelMode === 'sector' ? labs[j].mid : labs[j].f));
+      }
+    }
+    try { ctx.letterSpacing = '0px'; } catch(e){}
+  }
+  ctx.restore();
+}
+
+/* One forged arrowhead on a shaft, tip-first in the rotated hand frame.
+   hl/hw = head length and half-width at the shoulders, barb = how far the
+   barbs sweep back behind the shaft junction, bow = cutting-edge curvature
+   (0 straight, >0 convex leaf, <0 hollow-ground). */
+function arrowPath(r0, r1, sw, hl, hw, barb, bow){
+  var ms = r1 - hl*0.5, j = r1 - hl + barb;
+  ctx.beginPath();
+  ctx.moveTo(r1, 0);
+  ctx.quadraticCurveTo(ms,  hw*(0.5+bow), r1-hl,  hw);
+  ctx.lineTo(j,  sw);
+  ctx.lineTo(r0, sw);
+  ctx.lineTo(r0, -sw);
+  ctx.lineTo(j, -sw);
+  ctx.lineTo(r1-hl, -hw);
+  ctx.quadraticCurveTo(ms, -hw*(0.5+bow), r1, 0);
+  ctx.closePath();
+}
+
+function drawHand(rg){
+  if (rg.a < 0.01) return;
+  var bw = rg.rOut - rg.rIn;
+  var w = Math.min(bw, R*0.12);                 /* thickness reference   */
+  var T = Math.min(bw, R*0.18);                 /* tip-feature scale     */
+  var pad = clamp(bw*0.11, 1.5, R*0.035);
+  var r1 = rg.rOut - pad;                       /* tip ends in its ring  */
+  var r0 = R0*0.92;                             /* heel under the hub    */
+  var L = r1 - r0;
+  if (L <= 6) return;
+  var hc = P.hand[rg.id];
+  var ang = angOf(clamp(rg._p.frac, 0, 1));
+
+  ctx.save();
+  ctx.globalAlpha = rg.a;
+  ctx.translate(cx, cy);
+  ctx.rotate(ang);
+
+  /* shaft fades toward the hub so the crowded centre stays readable */
+  var g = ctx.createLinearGradient(r0, 0, r1, 0);
+  g.addColorStop(0, rgba(hc, 0.40));
+  g.addColorStop(0.5, rgba(hc, 0.78));
+  g.addColorStop(1, rgba(hc, 1));
+  ctx.fillStyle = g;
+  ctx.strokeStyle = g;
+  ctx.shadowColor = P.shadow;
+  ctx.shadowBlur = Math.max(2, w*0.26);
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = Math.max(0.5, w*0.045);
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  var m, dx, dy, sw, hl, hw, head, tip;
+  switch (rg.hand){
+    case 'spear':      /* Life: heavy broad spearhead on a stout shaft */
+      hl = Math.min(T*1.40, L*0.56); hw = w*0.185; sw = w*0.058;
+      arrowPath(r0, r1, sw, hl, hw, hl*0.30, 0.22);
+      ctx.fill();
+      break;
+
+    case 'lance':      /* Year: spear with a diamond void (unchanged) */
+      head = Math.min(T*1.25, L*0.5);
+      ctx.beginPath();
+      ctx.moveTo(r0, -w*0.10);
+      ctx.lineTo(r1 - head, -w*0.10);
+      ctx.lineTo(r1 - head*0.80, -w*0.145);
+      ctx.lineTo(r1, 0);
+      ctx.lineTo(r1 - head*0.80, w*0.145);
+      ctx.lineTo(r1 - head, w*0.10);
+      ctx.lineTo(r0, w*0.10);
+      ctx.closePath();
+      m = r1 - head*0.52; dx = head*0.30; dy = w*0.052;
+      ctx.moveTo(m - dx, 0); ctx.lineTo(m, -dy); ctx.lineTo(m + dx, 0); ctx.lineTo(m, dy);
+      ctx.closePath();
+      ctx.fill('evenodd');
+      break;
+
+    case 'bodkin':     /* Month: long straight-edged spike, no barbs */
+      hl = Math.min(T*1.20, L*0.34); hw = w*0.130; sw = w*0.042;
+      arrowPath(r0, r1, sw, hl, hw, hl*0.06, 0.0);
+      ctx.fill();
+      break;
+
+    case 'leaf':       /* Week: wide leaf-bladed head */
+      hl = Math.min(T*1.35, L*0.44); hw = w*0.185; sw = w*0.065;
+      arrowPath(r0, r1, sw, hl, hw, hl*0.30, 0.30);
+      ctx.fill();
+      break;
+
+    case 'broadhead':  /* Day: hollow-ground edges, long swept barbs */
+      hl = Math.min(T*1.05, L*0.32); hw = w*0.210; sw = w*0.050;
+      arrowPath(r0, r1, sw, hl, hw, hl*0.42, -0.16);
+      ctx.fill();
+      break;
+
+    case 'dart':       /* Hour: slender dart head with a ferrule */
+      hl = Math.min(T*1.10, L*0.32); hw = w*0.125; sw = w*0.032;
+      arrowPath(r0, r1, sw, hl, hw, hl*0.30, -0.05);
+      ctx.fill();
+      ctx.beginPath();                              /* ferrule behind the head */
+      ctx.rect(r1 - hl - w*0.05, -sw*2.8, Math.max(1, w*0.045), sw*5.6);
+      ctx.fill();
+      break;
+
+    case 'whisker':    /* Minute: hairline + arrowhead (unchanged) */
+      tip = Math.min(T*0.45, L*0.20);
+      ctx.lineWidth = Math.max(1, w*0.042);
+      ctx.beginPath();
+      ctx.moveTo(r0, 0);
+      ctx.lineTo(r1 - tip*0.9, 0);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(r1, 0);
+      ctx.lineTo(r1 - tip, -w*0.07);
+      ctx.lineTo(r1 - tip,  w*0.07);
+      ctx.closePath();
+      ctx.fill();
+      break;
+  }
+  ctx.restore();
+}
+
+function drawHub(){
+  ctx.save();
+  var g = ctx.createRadialGradient(cx, cy - R0*0.4, R0*0.1, cx, cy, R0);
+  g.addColorStop(0, rgba(mix(P.bg2, P.dark?WHITE:WHITE, 0.06), 1));
+  g.addColorStop(1, rgba(P.bg2, 1));
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.arc(cx, cy, R0, 0, TAU); ctx.fill();
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = rgba(P.ink, P.dark?0.30:0.22);
+  ctx.beginPath(); ctx.arc(cx, cy, R0-0.75, 0, TAU); ctx.stroke();
+  ctx.strokeStyle = rgba(P.ink, P.dark?0.10:0.08);
+  ctx.beginPath(); ctx.arc(cx, cy, R0*0.9, 0, TAU); ctx.stroke();
+  ctx.restore();
+}
+
+/* ------------------------------------------------------------- key rows */
+var rowsEl = document.getElementById('rows');
+var valEls = {}, boxEls = {}, rowEls = {};
+RINGS.forEach(function(rg){
+  var l = document.createElement('label');
+  l.className = 'row';
+  l.style.setProperty('--c', 'var(--'+rg.id+')');
+  var cb = document.createElement('input');
+  cb.type = 'checkbox';
+  cb.checked = !!state.vis[rg.id];
+  var chip = document.createElement('span'); chip.className = 'chip';
+  var nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = rg.name;
+  var val = document.createElement('span'); val.className = 'val'; val.textContent = '—';
+  l.appendChild(cb); l.appendChild(chip); l.appendChild(nm); l.appendChild(val);
+  rowsEl.appendChild(l);
+  valEls[rg.id] = val; boxEls[rg.id] = cb; rowEls[rg.id] = l;
+  l.classList.toggle('off', !state.vis[rg.id]);
+  cb.addEventListener('change', function(){
+    state.vis[rg.id] = cb.checked;
+    l.classList.toggle('off', !cb.checked);
+    save();
+    measure();
+  });
+});
+
+var pctEl = document.getElementById('pct');
+var lastRead = 0;
+function readouts(t, force){
+  if (!force && t - lastRead < 200 && Math.abs(t - lastRead) < 6e5) return;
+  lastRead = t;
+  RINGS.forEach(function(rg){
+    if (force) rg._p = rg.prog(t, state);
+    valEls[rg.id].textContent = rg._p.text;
+  });
+  var lp = RINGS[0]._p;
+  pctEl.textContent = lp.raw < 0 ? '0%' : (clamp(lp.raw,0,1)*100).toFixed(1) + '%';
+}
+
+/* -------------------------------------------------------------- inputs */
+var syEl = document.getElementById('sy'), lsEl = document.getElementById('ls');
+syEl.value = state.startYear;
+lsEl.value = state.lifespan;
+
+function bindNum(el, key, min, max){
+  var flag = null;
+  function reject(){
+    el.classList.add('bad');
+    clearTimeout(flag);
+    flag = setTimeout(function(){ el.classList.remove('bad'); }, 700);
+    el.value = state[key];
+  }
+  el.addEventListener('input', function(){
+    var v = parseFloat(el.value);
+    if (isFinite(v) && v >= min && v <= max && v === Math.round(v)){
+      el.classList.remove('bad');
+      state[key] = v;
+      save();
+      readouts(nowMs(), true);
+    }
+  });
+  el.addEventListener('change', function(){
+    var v = parseFloat(el.value);
+    if (!isFinite(v) || v < min || v > max){ reject(); return; }
+    v = Math.round(v);
+    state[key] = v;
+    el.value = v;
+    save();
+    readouts(nowMs(), true);
+  });
+  el.addEventListener('blur', function(){ if (el.value === '') el.value = state[key]; });
+}
+bindNum(syEl, 'startYear', 1900, 2100);
+bindNum(lsEl, 'lifespan', 1, 150);
+
+/* --------------------------------------------------------------- theme */
+var themeBtn = document.getElementById('theme');
+var ORDER = ['auto','light','dark'];
+function paintThemeBtn(){ themeBtn.textContent = state.theme; }
+themeBtn.addEventListener('click', function(){
+  state.theme = ORDER[(ORDER.indexOf(state.theme) + 1) % ORDER.length];
+  applyTheme();
+  paintThemeBtn();
+  save();
+});
+var mq = window.matchMedia('(prefers-color-scheme: dark)');
+if (mq.addEventListener) mq.addEventListener('change', function(){ if (state.theme === 'auto') readPalette(); });
+else if (mq.addListener) mq.addListener(function(){ if (state.theme === 'auto') readPalette(); });
+
+applyTheme();
+paintThemeBtn();
+
+/* ---------------------------------------------------------------- loop */
+var raf = null, lowPower = false, lastFrame = 0;
+
+function frame(ts){
+  raf = requestAnimationFrame(frame);
+  if (lowPower && ts - lastFrame < 250) return;
+  lastFrame = ts;
+
+  if (Math.abs(cvs.width - Math.round(W*Math.min(3, window.devicePixelRatio||1))) > 1) measure();
+
+  var t = nowMs(), i;
+  for (i=0;i<RINGS.length;i++) RINGS[i]._p = RINGS[i].prog(t, state);
+  ease();
+  drawBack();
+  drawDatum();
+  for (i=0;i<RINGS.length;i++) drawTrackFill(RINGS[i]);
+  for (i=0;i<RINGS.length;i++) drawTicks(RINGS[i], t);
+  for (i=0;i<RINGS.length;i++) drawHand(RINGS[i]);
+  drawHub();
+  readouts(t, false);
+}
+function start(){ if (!raf) raf = requestAnimationFrame(frame); }
+function stop(){ if (raf){ cancelAnimationFrame(raf); raf = null; } }
+
+document.addEventListener('visibilitychange', function(){ if (document.hidden) stop(); else start(); });
+window.addEventListener('blur', function(){ lowPower = true; });
+window.addEventListener('focus', function(){ lowPower = false; });
+window.addEventListener('resize', measure);
+window.addEventListener('orientationchange', measure);
+
+measure();
+start();
+})();
+</script>
+</body>
+</html>

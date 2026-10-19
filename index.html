@@ -368,7 +368,7 @@ function readPalette(){
     var c = g('--'+r.id);
     P.ring[r.id] = c;
     P.hand[r.id] = mix(c, dark?WHITE:mix(BLACK,ink,0.35), dark?0.34:0.42);
-    P.wash[r.id] = mix(c, bg, dark?0.62:0.58);
+    P.wash[r.id] = mix(c, bg, dark?0.48:0.46);
   });
 }
 
@@ -623,10 +623,11 @@ function drawHand(rg){
   ctx.translate(cx, cy);
   ctx.rotate(ang);
 
-  /* shaft fades toward the hub so the crowded centre stays readable */
+  /* shaft still eases toward the hub so the crowded centre stays readable,
+     but stays solid enough to read as a hand rather than a scratch */
   var g = ctx.createLinearGradient(r0, 0, r1, 0);
-  g.addColorStop(0, rgba(hc, 0.40));
-  g.addColorStop(0.5, rgba(hc, 0.78));
+  g.addColorStop(0, rgba(hc, 0.62));
+  g.addColorStop(0.5, rgba(hc, 0.86));
   g.addColorStop(1, rgba(hc, 1));
   ctx.fillStyle = g;
   ctx.strokeStyle = g;

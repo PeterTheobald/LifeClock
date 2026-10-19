@@ -65,7 +65,7 @@ body{
 }
 #dial{position:fixed;inset:0;display:block}
 
-/* ---- centre hub ---- */
+/* ---- center hub ---- */
 #hub{
   position:fixed;
   transform:translate(-50%,-50%);
@@ -623,7 +623,7 @@ function drawHand(rg){
   ctx.translate(cx, cy);
   ctx.rotate(ang);
 
-  /* shaft still eases toward the hub so the crowded centre stays readable,
+  /* shaft still eases toward the hub so the crowded center stays readable,
      but stays solid enough to read as a hand rather than a scratch */
   var g = ctx.createLinearGradient(r0, 0, r1, 0);
   g.addColorStop(0, rgba(hc, 0.62));

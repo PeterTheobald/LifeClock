@@ -4,7 +4,7 @@ A clock that measures time at seven scales at once, from the passing second to a
 
 **[View it live at petertheobald.github.io/LifeClock](https://petertheobald.github.io/LifeClock/)**
 
-![The Life Clock dial: seven concentric rings, Life at the centre reading 52.4%, then the year by month, the day of the month, the week, the 24 hours, the minutes and the seconds at the rim. Each ring is filled in as far as its cycle has run.](LifeClock-screenshot.png)
+![The Life Clock dial: seven concentric rings, Life at the center reading 52.4%, then the year by month, the day of the month, the week, the 24 hours, the minutes and the seconds at the rim. Each ring is filled in as far as its cycle has run.](LifeClock-screenshot.png)
 
 ## Why I made it
 
@@ -16,7 +16,7 @@ I don't find it morbid (mostly). I find it refocuses me on not wasting precious 
 
 ## The rings
 
-From the centre outward, each ring fills in as its cycle completes and carries its own hand, drawn as a distinct arrowhead running from the hub out to its own ring.
+From the center outward, each ring fills in as its cycle completes and carries its own hand, drawn as a distinct arrowhead running from the hub out to its own ring.
 
 | Ring | Measures | Marked |
 |---|---|---|
@@ -34,7 +34,7 @@ Every hand sweeps continuously from exact fractional time rather than ticking, s
 
 Easiest is the [live version](https://petertheobald.github.io/LifeClock/). Otherwise download `index.html` and open it in a browser — that's all, it's one file with no dependencies, no build step and no network requests.
 
-- **Set your start year and lifespan** in the two fields at the centre. Defaults are 1990 and 85 years. It remembers both, along with your theme and which rings you have showing, so it comes back the way you left it.
+- **Set your start year and lifespan** in the two fields at the center. Defaults are 1990 and 85 years. It remembers both, along with your theme and which rings you have showing, so it comes back the way you left it.
 - **Turn rings on and off** with the checkboxes in the corner key. The remaining rings spread out to fill the dial.
 - **Switch themes** with the auto / light / dark button. Auto follows your system setting.
 

@@ -10,9 +10,7 @@ A clock that measures time at seven scales at once, from the passing second to a
 
 I wanted a clock that also showed my week passing by. An ordinary clock tells you where you are in the day, but nothing tells you where you are in the week, and the week is the unit I actually live in. So I drew a ring for it, with the hand ending inside its own circle and the ring filling in as the week ran down.
 
-It looked good, so I added the month. Then, inspired by Wait But Why's [Your Life in Weeks](https://waitbutwhy.com/2014/05/life-weeks.html), I added my entire life to the clock — one ring, from my birth year to a reasonable guess at the end.
-
-Bertrand Planes' [Life Clock](https://en.wikipedia.org/wiki/Life_clock) pointed the same way. His is a real wall clock from 2004 with the mechanism slowed 61,320 times, so one full turn of the dial takes 84 years and each hour mark stands for seven years of a life. Mine keeps the ordinary hours and minutes alongside it, because the contrast is what I was after.
+It looked good, so I added the month. Then, inspired by Wait But Why's [Your Life in Weeks](https://waitbutwhy.com/2014/05/life-weeks.html) and Bertrand Planes' [Life Lock](http://en.wikipedia.org/wiki/Life_clock), I added my entire life to the clock — one ring, from my birth year to a reasonable guess at the end.
 
 I don't find it morbid (mostly). I find it refocuses me on not wasting precious time. The seconds ring moves fast enough to feel urgent and the life ring moves so slowly you can't see it move at all, and having both on the same dial is the entire point. Enjoy it, use it, share it.
 

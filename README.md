@@ -2,6 +2,8 @@
 
 A clock that measures time at seven scales at once, from the passing second to a whole human life. One HTML file, no dependencies.
 
+**[View it live at petertheobald.github.io/LifeClock](https://petertheobald.github.io/LifeClock/)**
+
 ![The Life Clock dial: seven concentric rings, Life at the centre reading 52.4%, then the year by month, the day of the month, the week, the 24 hours, the minutes and the seconds at the rim. Each ring is filled in as far as its cycle has run.](LifeClock-screenshot.png)
 
 ## Why I made it
@@ -9,6 +11,8 @@ A clock that measures time at seven scales at once, from the passing second to a
 I wanted a clock that also showed my week passing by. An ordinary clock tells you where you are in the day, but nothing tells you where you are in the week, and the week is the unit I actually live in. So I drew a ring for it, with the hand ending inside its own circle and the ring filling in as the week ran down.
 
 It looked good, so I added the month. Then, inspired by Wait But Why's [Your Life in Weeks](https://waitbutwhy.com/2014/05/life-weeks.html), I added my entire life to the clock — one ring, from my birth year to a reasonable guess at the end.
+
+Bertrand Planes' [Life Clock](https://en.wikipedia.org/wiki/Life_clock) pointed the same way. His is a real wall clock from 2004 with the mechanism slowed 61,320 times, so one full turn of the dial takes 84 years and each hour mark stands for seven years of a life. Mine keeps the ordinary hours and minutes alongside it, because the contrast is what I was after.
 
 I don't find it morbid (mostly). I find it refocuses me on not wasting precious time. The seconds ring moves fast enough to feel urgent and the life ring moves so slowly you can't see it move at all, and having both on the same dial is the entire point. Enjoy it, use it, share it.
 
@@ -30,19 +34,19 @@ Every hand sweeps continuously from exact fractional time rather than ticking, s
 
 ## Using it
 
-Open `index.html` in a browser. That's all — it's one file with no dependencies, no build step and no network requests.
+Easiest is the [live version](https://petertheobald.github.io/LifeClock/). Otherwise download `index.html` and open it in a browser — that's all, it's one file with no dependencies, no build step and no network requests.
 
 - **Set your start year and lifespan** in the two fields at the centre. Defaults are 1990 and 85 years. It remembers both, along with your theme and which rings you have showing, so it comes back the way you left it.
 - **Turn rings on and off** with the checkboxes in the corner key. The remaining rings spread out to fill the dial.
 - **Switch themes** with the auto / light / dark button. Auto follows your system setting.
 
-If you'd rather serve it than open the file directly:
+If you'd rather serve it locally than open the file directly:
 
 ```
 python3 -m http.server 8000
 ```
 
-then visit http://localhost:8000.
+then visit http://localhost:8000. Serving it is worth it over opening the file directly, because browsers restrict storage on `file://` URLs and it may forget your settings.
 
 ## Watching the slow rings move
 

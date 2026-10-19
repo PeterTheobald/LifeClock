@@ -10,7 +10,7 @@ A clock that measures time at seven scales at once, from the passing second to a
 
 I wanted a clock that also showed my week passing by. An ordinary clock tells you where you are in the day, but nothing tells you where you are in the week, and the week is the unit I actually live in. So I drew a ring for it, with the hand ending inside its own circle and the ring filling in as the week ran down.
 
-It looked good, so I added the month. Then, inspired by Wait But Why's [Your Life in Weeks](https://waitbutwhy.com/2014/05/life-weeks.html) and Bertrand Planes' [Life Lock](http://en.wikipedia.org/wiki/Life_clock), I added my entire life to the clock — one ring, from my birth year to a reasonable guess at the end.
+It looked good, so I added the month. Then, inspired by Wait But Why's [Your Life in Weeks](https://waitbutwhy.com/2014/05/life-weeks.html) and Bertrand Planes' [Life Clock](https://en.wikipedia.org/wiki/Life_clock), I added my entire life to the clock — one ring, from my birth year to a reasonable guess at the end.
 
 I don't find it morbid (mostly). I find it refocuses me on not wasting precious time. The seconds ring moves fast enough to feel urgent and the life ring moves so slowly you can't see it move at all, and having both on the same dial is the entire point. Enjoy it, use it, share it.
 
@@ -20,7 +20,7 @@ From the centre outward, each ring fills in as its cycle completes and carries i
 
 | Ring | Measures | Marked |
 |---|---|---|
-| Life | birth year to birth year + lifespan | a tick per year, labelled each decade |
+| Life | birth year to birth year + lifespan | a tick per year, labeled each decade |
 | Year | January 1 to December 31 | the twelve months |
 | Month | the 1st to the 28th, 29th, 30th or 31st | every day of this month |
 | Week | Monday to Sunday | the seven days |

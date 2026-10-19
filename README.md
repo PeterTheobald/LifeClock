@@ -2,6 +2,8 @@
 
 A clock that measures time at seven scales at once, from the passing second to a whole human life. One HTML file, no dependencies.
 
+![The Life Clock dial: seven concentric rings, Life at the centre reading 53.2%, then the year by month, the day of the month, the week, the 24 hours, the minutes and the seconds at the rim. Each ring is filled in as far as its cycle has run.](LifeClock-screenshot.png)
+
 ## Why I made it
 
 I wanted a clock that also showed my week passing by. An ordinary clock tells you where you are in the day, but nothing tells you where you are in the week, and the week is the unit I actually live in. So I drew a ring for it, with the hand ending inside its own circle and the ring filling in as the week ran down.
